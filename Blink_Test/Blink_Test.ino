@@ -1,5 +1,5 @@
-#define LED_Blue 4 //2
-#define LED_red 27
+#define LED_Blue 42 //2
+#define LED_red 41
 void setup() {
  // initialize digital pin LED_BUILTSIN as an output.
   Serial.begin(115200);
@@ -10,10 +10,10 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
   digitalWrite(LED_Blue, HIGH);
-  // digitalWrite(LED_red, HIGH);
+  digitalWrite(LED_red, HIGH);
   Serial.println("turn on");
   delay(1000);
-  // digitalWrite(LED_red, LOW);
+  digitalWrite(LED_red, LOW);
   digitalWrite(LED_Blue, LOW);
   Serial.println("turn off");
   delay(1000);

@@ -1,138 +1,210 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <Servo.h>
 
 const char* ssid = "I dont have internet";
 const char* password = "gunasree";
 
 ESP8266WebServer server(80);
 
-// GPIO pins for PWM
-const int leftPin = 1;  // GPIO1 (TX)
-const int rightPin = 0; // GPIO2 (D4 / Built-in LED on many boards)
+const int throttleLeftPin = 1;  // keep same
+const int throttleRightPin = 2; // keep same
 
-// HTML must be declared before it's used in handleRoot()
-static const char PROGMEM html[] = R"rawliteral(
+const int rudderPin = 0;   // Servo pin for left/right
+const int elevatorPin = 3; // Servo pin for up/down
+
+Servo rudderServo;
+Servo elevatorServo;
+
+int basePWM = 0;
+
+static const char html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vertical Sliders</title>
-    <style>
-        :root {
-            --clr-neon: hsl(242 100% 54%);
-        }
+  <meta charset="utf-8">
+  <title>ESP32 Controller</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
 
-        body {
-            margin: 0;
-            background-color: black;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100vh;
-            padding: 0 20px;
-        }
+    .vslider-container, .joystick-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .vslider-container {
-            height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    .vslider {
+      writing-mode: bt-lr;
+      -webkit-appearance: slider-vertical;
+      width: 30px;
+      height: 300px;
+      background: white;
+      border-radius: 10px;
+    }
 
-        .vslider {
-            writing-mode: bt-lr; /* bottom to top */
-            -webkit-appearance: slider-vertical;
-            width: 30px;
-            height: 300px;
-            background: #ffffff;
-            border-radius: 10px;
-            outline: none;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
+    .joystick {
+      width: 200px;
+      height: 200px;
+      background: #222;
+      position: relative;
+      border-radius: 50%;
+      border: 2px solid #444;
+      touch-action: none;
+    }
 
-        .vslider:hover {
-            opacity: 1;
-        }
-
-        .vslider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--clr-neon);
-            cursor: pointer;
-        }
-
-        .vslider::-moz-range-thumb {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--clr-neon);
-            cursor: pointer;
-        }
-    </style>
+    .knob {
+      width: 50px;
+      height: 50px;
+      background: hsl(242, 100%, 54%);
+      border-radius: 50%;
+      position: absolute;
+      top: 75px;
+      left: 75px;
+      touch-action: none;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Left Slider -->
-    <div class="vslider-container">
-        <input type="range" min="0" max="255" value="0" class="vslider" 
-               oninput="updatePWM('left', this.value)">
-    </div>
+  <div class="vslider-container">
+    <label>Throttle</label>
+    <input type="range" min="0" max="255" value="0" class="vslider" id="throttleSlider" oninput="sendThrottle(this.value)">
+  </div>
 
-    <!-- Right Slider -->
-    <div class="vslider-container">
-        <input type="range" min="0" max="255" value="0" class="vslider" 
-               oninput="updatePWM('right', this.value)">
+  <div class="joystick-container">
+    <label>Joystick</label>
+    <div class="joystick" id="joystick">
+      <div class="knob" id="knob"></div>
     </div>
+  </div>
 
 <script>
-function updatePWM(side, val) {
-    fetch(`/pwm?side=${side}&val=${val}`);
+let knob = document.getElementById("knob");
+let joystick = document.getElementById("joystick");
+
+let dragging = false;
+
+joystick.addEventListener("touchstart", startDrag);
+joystick.addEventListener("touchmove", drag);
+joystick.addEventListener("touchend", endDrag);
+
+function startDrag(e) {
+  dragging = true;
+}
+
+function drag(e) {
+  if (!dragging) return;
+  e.preventDefault();
+  let touch = e.touches[0];
+  let rect = joystick.getBoundingClientRect();
+  let x = touch.clientX - rect.left - 100;
+  let y = touch.clientY - rect.top - 100;
+
+  let maxDist = 75;
+  let dist = Math.min(Math.sqrt(x*x + y*y), maxDist);
+  let angle = Math.atan2(y, x);
+  let dx = dist * Math.cos(angle);
+  let dy = dist * Math.sin(angle);
+
+  knob.style.left = (100 + dx - 25) + "px";
+  knob.style.top = (100 + dy - 25) + "px";
+
+  let joyX = Math.round((dx / maxDist) * 127 + 127);
+  let joyY = Math.round((-dy / maxDist) * 127 + 127);
+
+  sendJoystick(joyX, joyY);
+}
+
+function endDrag() {
+  dragging = false;
+  knob.style.left = "75px";
+  knob.style.top = "75px";
+  sendJoystick(127, 127);
+}
+
+function sendThrottle(val) {
+  fetch(`/pwm?type=throttle&val=${val}`);
+}
+
+function sendJoystick(x, y) {
+  fetch(`/joystick?x=${x}&y=${y}`);
 }
 </script>
+
 </body>
 </html>
 )rawliteral";
 
-// Handle root page
 void handleRoot() {
-  server.send(200, "text/html", (const char*) html);
+  server.send(200, "text/html", html);
 }
 
-// Handle slider PWM input
 void handlePWM() {
-  String side = server.arg("side");
+  String type = server.arg("type");
   int val = server.arg("val").toInt();
+  val = constrain(val, 0, 255);
 
-  if (val < 0) val = 0;
-  if (val > 255) val = 255;
-
-  if (side == "left") {
-    analogWrite(leftPin, val);
-  } else if (side == "right") {
-    analogWrite(rightPin, val);
+  if (type == "throttle") {
+    basePWM = val;
+    analogWrite(throttleLeftPin, basePWM);
+    analogWrite(throttleRightPin, basePWM);
   }
 
-  server.send(200, "text/plain", "PWM set");
+  server.send(200, "text/plain", "OK");
+}
+
+void handleJoystick() {
+  int x = constrain(server.arg("x").toInt(), 0, 255);
+  int y = constrain(server.arg("y").toInt(), 0, 255);
+
+  // Control rudder and elevator servos
+  int rudderAngle = map(x, 0, 255, 0, 180);
+  int elevatorAngle = map(y, 0, 255, 0, 180);
+  rudderServo.write(rudderAngle);
+  elevatorServo.write(elevatorAngle);
+
+  // Control throttle via joystick X-axis
+  int offset = map(x - 127, -127, 128, -basePWM, basePWM);
+  int leftThrottle = constrain(basePWM - offset, 0, 255);
+  int rightThrottle = constrain(basePWM + offset, 0, 255);
+
+  analogWrite(throttleLeftPin, leftThrottle);
+  analogWrite(throttleRightPin, rightThrottle);
+
+  server.send(200, "text/plain", "Joystick OK");
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(leftPin, OUTPUT);
-  pinMode(rightPin, OUTPUT);
+
+  pinMode(throttleLeftPin, OUTPUT);
+  pinMode(throttleRightPin, OUTPUT);
+  analogWrite(throttleLeftPin, 0);
+  analogWrite(throttleRightPin, 0);
+
+  rudderServo.attach(rudderPin);
+  elevatorServo.attach(elevatorPin);
 
   WiFi.softAP(ssid, password);
-  Serial.print("Access Point IP: ");
   Serial.println(WiFi.softAPIP());
 
   server.on("/", handleRoot);
   server.on("/pwm", handlePWM);
+  server.on("/joystick", handleJoystick);
   server.begin();
-  Serial.println("HTTP server started");
+  Serial.println("Server started");
 }
 
 void loop() {

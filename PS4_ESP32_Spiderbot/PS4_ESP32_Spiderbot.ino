@@ -8,10 +8,14 @@
 //       |  D2    |  |   D4    |
 //       | joint2 |  |  joint4 |
 //  ----- --------    --------- -----
+
 // |  D3    |               |  D5    |
 // | joint3 |               | joint5 |
 //  --------                 --------
 //                Front
+
+
+
 #include <Bluepad32.h>
 #include <ESP32Servo.h>
 
@@ -178,22 +182,23 @@ void processGamepad(ControllerPtr ctl) {
   }
   
   if (ctl->buttons()==0x0020) { 
+
     stand3();
   }
   
 
   if (ctl->brake()>10)
   {
-    wink(4);
     ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
-                            0x10 /* strongMagnitude */);    
+                            0x10 /* strongMagnitude */); 
+    wink(4);   
   }
 
   if (ctl->throttle()>10)
   {
-    downaction(2);
     ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
-                            0x10 /* strongMagnitude */);   
+                            0x10 /* strongMagnitude */);
+    downaction(2);   
   }
   dumpGamepad(ctl);
 }
@@ -361,7 +366,7 @@ void wink(unsigned int step){
   standhome();
   joint9.write(home_joint9-80);
   delay(200);
-  joint5.write(150);
+  joint7.write(20);
 
   while (step-- > 0){
   joint4.write(home_joint4 + 60);
@@ -531,11 +536,20 @@ void setup() {
   joint2.attach(13);
   joint3.attach(12);
   joint4.attach(14);
-  joint5.attach(27);
+  joint5.attach(25);
   joint6.attach(26);
-  joint7.attach(25);
+  joint7.attach(27);
   joint8.attach(33);
-  joint9.attach(32);  // Shared with neck servo if needed
+  joint9.attach(32);
+
+  // joint2.attach(13);
+  // joint3.attach(26);
+  // joint4.attach(12);
+  // joint5.attach(15);
+  // joint6.attach(14);
+  // joint7.attach(33);
+  // joint8.attach(27);
+  // joint9.attach(32);
 
   joint2.write(home_joint2);
   joint3.write(home_joint3);

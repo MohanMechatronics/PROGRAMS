@@ -119,43 +119,57 @@ void dumpGamepad(ControllerPtr ctl) {
 // Gamepad input handler
 void processGamepad(ControllerPtr ctl) {
   if (ctl->axisY() > 75) {
-    reccmd = "F";
-  }
-  else if (ctl->axisY() < -75) {
     reccmd= "B";
   }
-  else if (ctl->axisX() > 75) {
-    reccmd = "L";
+  else if (ctl->axisY() < -75) {
+    reccmd = "F";
   }
-  else if (ctl->axisX() < -75) {
+  else if (ctl->axisX() > 75) {
     reccmd = "R";
   }
+  else if (ctl->axisX() < -75) {
+    reccmd = "L";
+  }
   else if (ctl->dpad() == 0x01) {
-   
+   reccmd = "B";
   }
   else if (ctl->dpad() == 0x02) {
-    
+    reccmd= "F";
   }
   else if (ctl->dpad() == 0x08) {
-    
+    reccmd = "L";
   }
   else if (ctl->dpad() == 0x04) {
-    
+    reccmd = "R";
+  }
+  else{
+    reccmd = "S";
+    Leg1F.write(80);
+    Leg1B.write(100);
+    Leg2F.write(100);
+    Leg2B.write(80);
+    Leg3F.write(80);
+    Leg3B.write(100);
+    Leg4F.write(100);
+    Leg4B.write(80);
   }
 
-  if (ctl->a()) reccmd = "G";// X 
-  if (ctl->x()) reccmd = "I"; // Square
-  if (ctl->b()) reccmd = "H";//cirle
-  if (ctl->y()) reccmd = "J";// tringle
-  if (ctl->brake() > 10)  reccmd = "C";;
-  if (ctl->throttle() > 10) reccmd = "V";;
+  if (ctl->a()) { 
+    sithome();
+  }                      // X 
+
+  // if (ctl->x()) reccmd = "I"; // Square
+  // if (ctl->b()) reccmd = "H";//cirle
+  // if (ctl->y()) reccmd = "J";// tringle
+  if (ctl->brake() > 10)  changeheight();
+  if (ctl->throttle() > 10) sayhai();
   
   if (ctl->buttons()==0x0010) { 
-      reccmd = "U";
+      reccmd == "p";
   }
   
   if (ctl->buttons()==0x0020) { 
-      reccmd = "D";
+      othercmd == "O";
   }
 
   dumpGamepad(ctl);
@@ -211,6 +225,7 @@ void setup() {
   Leg3B.attach(25);
   Leg4F.attach(33);
   Leg4B.attach(32);
+  
   Headservo.attach(15);
   delay(1000);
   Servomovement();
@@ -369,15 +384,26 @@ void loop() {
   }
 }
 
+void sithome(){
+  Leg1F.write(80);
+  Leg1B.write(100);
+  Leg2F.write(100);
+  Leg2B.write(80);
+  Leg3F.write(80);
+  Leg3B.write(100);
+  Leg4F.write(100);
+  Leg4B.write(80);
+}
+
 void sayhai() {
   TOLeg1F = 0;
   TOLeg1B = 180;
   TOLeg2F = 180;
   TOLeg2B = 0;
-  TOLeg3F = 180;
-  TOLeg3B = 0;
-  TOLeg4F = 0;
-  TOLeg4B = 180;
+  TOLeg3F = 80;
+  TOLeg3B = 100;
+  TOLeg4F = 100;
+  TOLeg4B = 80;
   TOHeadservo = 90;
   Servomovement();
 

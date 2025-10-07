@@ -148,15 +148,16 @@ void processGamepad(ControllerPtr ctl) {
   }  
   else if (ctl->axisRX() > 75)
   {
-    processCarMovement(TURN_LEFT);
     ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
                             0x10 /* strongMagnitude */);
+    processCarMovement(TURN_LEFT);
   }
   else if (ctl->axisRX() < -75)
   {
-    processCarMovement(TURN_RIGHT);
+    
     ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
                             0x10 /* strongMagnitude */);
+    processCarMovement(TURN_RIGHT);
   }
   else if (ctl->axisY() > 75)
   {

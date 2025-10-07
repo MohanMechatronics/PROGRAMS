@@ -76,10 +76,13 @@
 // --- Create 3 servo objects ---
 Servo servo1;
 Servo servo2;
+
 Servo servo3;
 
 const int servoPin1 = 13;
 const int servoPin2 = 12;
+
+
 const int servoPin3 = 14;
 
 void setup() {
@@ -90,10 +93,6 @@ void setup() {
   servo2.attach(servoPin2);
   servo3.attach(servoPin3);
 
-  // Start all at 0°
-  servo1.write(90);
-  servo2.write(90);
-  servo3.write(90);
 }
 
 // ---- Function to move one servo up and down ----
@@ -111,14 +110,19 @@ void waveServo(Servo &servo, const char *name, int stepDelay) {
 }
 
 void loop() {
-  // Servo1 does wave
-  waveServo(servo1, "Servo1", 10);  // 50ms delay per step = very slow
+  // // Servo1 does wave
+  // waveServo(servo1, "Servo1", 10);  // 50ms delay per step = very slow
 
-  // Servo2 starts after Servo1 peaks (during Servo1 decrease)
-  waveServo(servo2, "Servo2", 10);
+  // // Servo2 starts after Servo1 peaks (during Servo1 decrease)
+  // waveServo(servo2, "Servo2", 10);
 
-  // Servo3 starts after Servo2 peaks (during Servo2 decrease)
-  waveServo(servo3, "Servo3", 10);
+  // // Servo3 starts after Servo2 peaks (during Servo2 decrease)
+  // waveServo(servo3, "Servo3", 10);
 
-  // Then it cycles back automatically
+  // // Then it cycles back automatically
+
+  // Start all at 0°
+  servo1.write(90);
+  servo2.write(90);
+  servo3.write(90);
 }

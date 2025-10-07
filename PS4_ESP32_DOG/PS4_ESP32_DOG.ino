@@ -51,43 +51,117 @@ void standhome() {
   servo4.write(home);
 }
 
+void RUN(unsigned int steps) {
+for (unsigned int i = 0; i < steps; i++) {
+    servo1.write(home + 60);
+    servo4.write(home - 60);
+    servo2.write(home - 60);
+    servo3.write(home + 60);
+    standhome();
+    delay(100);
+    servo1.write(home - 60);
+    servo4.write(home + 60);
+    servo2.write(home + 60);
+    servo3.write(home - 60);
+    standhome();
+    servo1.write(home + 60);
+    servo4.write(home - 60);
+    servo2.write(home - 60);
+    servo3.write(home + 60);
+    delay(100);
+    standhome();
+    
+  }
+}
+
+void RUNBACK(unsigned int steps) {
+for (unsigned int i = 0; i < steps; i++) {
+    servo1.write(home - 60);
+    servo4.write(home + 60);
+    servo2.write(home + 60);
+    servo3.write(home - 60);
+    standhome();
+    delay(100);
+    servo1.write(home + 60);
+    servo4.write(home - 60);
+    servo2.write(home - 60);
+    servo3.write(home + 60);
+    standhome();
+    servo1.write(home - 60);
+    servo4.write(home + 60);
+    servo2.write(home + 60);
+    servo3.write(home - 60);
+    delay(100);
+    standhome();
+  }
+}
+
 // Improved walking using 4 servos
 void walkForward(unsigned int steps) {
 for (unsigned int i = 0; i < steps; i++) {
-    servo1.write(home+30);
-    servo4.write(home+30);
+    servo1.write(home + 20);
+    servo4.write(home - 20);
     delay(100);
-    servo1.write(home);
-    servo4.write(home);
+    servo1.write(home + 40);
+    servo4.write(home - 40);
+    servo2.write(home + 20);
+    servo3.write(home - 20);
     delay(100);
-    servo2.write(home-30);
-    servo3.write(home-30);
+    servo1.write(home + 20);
+    servo4.write(home - 20);
+    servo2.write(home + 20);
+    servo3.write(home - 20);
     delay(100);
-    servo2.write(home);
-    servo3.write(home);
+    standhome();
     delay(100);
+    servo2.write(home - 20);
+    servo3.write(home + 20);
+    delay(100);
+    servo1.write(home - 20);
+    servo4.write(home + 20);
+    servo2.write(home - 40);
+    servo3.write(home + 40);
+    delay(100);
+    servo1.write(home - 20);
+    servo4.write(home + 20);
+    servo2.write(home - 20);
+    servo3.write(home + 20);
+    delay(100);
+    standhome();
   }
 }
 
 void walkBackward(unsigned int steps) {
   for (unsigned int i = 0; i < steps; i++) {
-    servo1.write(home + 40); 
-    servo2.write(home + 40); 
-    servo3.write(home - 40); 
-    servo4.write(home - 40);  
-    delay(200);
-
+    servo1.write(home - 20);
+    servo4.write(home + 20);
+    delay(100);
+    servo1.write(home - 40);
+    servo4.write(home + 40);
+    servo2.write(home - 20);
+    servo3.write(home + 20);
+    delay(100);
+    servo1.write(home - 20);
+    servo4.write(home + 20);
+    servo2.write(home - 20);
+    servo3.write(home + 20);
+    delay(100);
     standhome();
     delay(100);
-    
-    servo1.write(home - 40);  
-    servo2.write(home - 40); 
-    servo3.write(home + 40);  
-    servo4.write(home + 40);  
+    servo2.write(home + 20);
+    servo3.write(home - 20);
     delay(100);
-
+    servo1.write(home + 20);
+    servo4.write(home - 20);
+    servo2.write(home + 40);
+    servo3.write(home - 40);
+    delay(100);
+    servo1.write(home + 20);
+    servo4.write(home - 20);
+    servo2.write(home + 20);
+    servo3.write(home - 20);
+    delay(100);
     standhome();
-    delay(100);
   }
 }
 
@@ -260,6 +334,17 @@ void processGamepad(ControllerPtr ctl) {
   else if (ctl->axisX() < -75) {
     turnLeft(1);
   }
+
+  else if (ctl->axisRY() < -75)
+  {
+    RUN(1);
+  }
+
+  else if (ctl->axisRY() > 75)
+  {
+    RUNBACK(1);
+  }
+
   else if (ctl->dpad() == 0x01) {
     walkForward(1);
   }
@@ -277,9 +362,18 @@ void processGamepad(ControllerPtr ctl) {
   if (ctl->x()) twist();
   if (ctl->b()) standhome(); //cirle
   if (ctl->y()) downaction(2); // tringle
-  if (ctl->brake() > 10) wink(2);
-  if (ctl->throttle() > 10) handshake(2);
-  
+  if (ctl->brake() > 10){
+    ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
+                            0x10 /* strongMagnitude */);  
+    wink(2);  
+  } 
+  if (ctl->throttle() > 10)
+  {
+    ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
+                            0x10 /* strongMagnitude */);
+    handshake(2); 
+  }
+
   if (ctl->buttons()==0x0010) { 
     shakeL(1);
   }

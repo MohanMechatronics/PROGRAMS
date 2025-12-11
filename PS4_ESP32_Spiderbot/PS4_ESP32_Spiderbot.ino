@@ -14,6 +14,14 @@
 //  --------                 --------
 //                Front
 
+  // joint2.attach(13);
+  // joint3.attach(12);
+  // joint4.attach(14);
+  // joint5.attach(25);
+  // joint6.attach(26);
+  // joint7.attach(27);
+  // joint8.attach(33);
+  // joint9.attach(32);
 
 
 #include <Bluepad32.h>
@@ -536,7 +544,7 @@ void setup() {
   joint2.attach(13);
   joint3.attach(12);
   joint4.attach(14);
-  joint5.attach(25);
+  joint5.attach(15); // joint5.attach(25);
   joint6.attach(26);
   joint7.attach(27);
   joint8.attach(33);

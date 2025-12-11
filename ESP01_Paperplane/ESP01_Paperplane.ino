@@ -13,6 +13,7 @@ const int throttleRightPin = 2; // keep same
 const int rudderPin = 0;   // Servo pin for left/right
 const int elevatorPin = 3; // Servo pin for up/down
 
+
 Servo rudderServo;
 Servo elevatorServo;
 

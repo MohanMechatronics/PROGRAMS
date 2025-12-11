@@ -26,14 +26,15 @@ const char* password = "12345678";
 void setup() {    // initialize
   Serial.begin(115200);  // set the baud rate to 115200
  
-  Biped_Robot.myservo_init(12,25,26,27);
+  Biped_Robot.myservo_init(38,48,42,5);
+  // Biped_Robot.myservo_init(12,25,26,27);
+
   Biped_Robot.Ultrasonic_Init();
 
   WiFi.setTxPower(WIFI_POWER_19_5dBm);  // Set the transmit power of WiFi
   WiFi.mode(WIFI_AP); // Set WiFi mode to AP (Access Point) mode
   WiFi.softAP(ssid, password, 9); // Set the WiFi hotspot name and password, and enable AP mode
-  IPAddress myIP = WiFi.softAPIP(); // Obtain the IP address of 
-  the AP mode
+  IPAddress myIP = WiFi.softAPIP(); // Obtain the IP address of the AP mode
   Serial.print("AP IP address: "); 
   Serial.println(myIP); // address: 192.168.4.1
   Biped_Robot.stop();
@@ -146,14 +147,5 @@ void loop() {
   }
 
 
-
-}
-void setup() {
-  // put your setup code here, to run once:
-
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
 
 }

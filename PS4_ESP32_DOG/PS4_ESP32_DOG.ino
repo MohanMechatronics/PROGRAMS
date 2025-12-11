@@ -6,7 +6,10 @@
 //       | F_LEFT  |  | F_RIGHT  |
 //    13 | SERVO 1 |  |  SERVO 2 | 12
 //  ----- --------    --------- -----
+
+
 //                Front
+
 
 #include <Bluepad32.h>
 #include <ESP32Servo.h>
@@ -245,6 +248,7 @@ void wink(unsigned int times) {
   }
   standhome();
 }
+
 void handshake(unsigned int times) {
   servo4.write(180);
   delay(200);
@@ -407,10 +411,10 @@ void setup() {
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.enableVirtualDevice(false);
 
-  servo1.attach(13);  // Right leg
-  servo2.attach(12);  // Left leg
-  servo3.attach(14);  // Right arm
-  servo4.attach(27);  // Left arm
+  servo1.attach(14);  // Right leg
+  servo2.attach(48);  // Left leg
+  servo3.attach(42);  // Right arm
+  servo4.attach(5);  // Left arm
 
   standhome();
 }

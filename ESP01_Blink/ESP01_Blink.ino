@@ -38,12 +38,12 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  // digitalWrite(LED_Blue, HIGH);
-  // digitalWrite(LED_red, HIGH);
-  // Serial.println("turn on");
-  // delay(5000);
-  // digitalWrite(LED_red, LOW);
-  // digitalWrite(LED_Blue, LOW);
-  // Serial.println("turn off");
-  // delay(5000);
+  digitalWrite(LED_Blue, HIGH);
+  digitalWrite(LED_red, HIGH);
+  Serial.println("turn on");
+  delay(1000);
+  digitalWrite(LED_red, LOW);
+  digitalWrite(LED_Blue, LOW);
+  Serial.println("turn off");
+  delay(1000);
 }

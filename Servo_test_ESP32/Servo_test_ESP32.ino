@@ -1,3 +1,52 @@
+#include <ESP32Servo.h>
+
+// --- Create servo object ---
+Servo servo1;
+
+const int servoPin1 = 27;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);   // Give Serial Monitor time to open
+
+  Serial.println("ESP32 Servo Test Started");
+
+  // Attach servo
+  servo1.attach(servoPin1);
+  Serial.print("Servo attached to pin: ");
+  Serial.println(servoPin1);
+}
+
+
+void loop() {
+  servo1.write(0);
+  Serial.println("Angle = 0");
+  delay(1000);
+
+  servo1.write(90);
+  Serial.println("Angle = 90");
+  delay(1000);
+
+  servo1.write(180);
+  Serial.println("Angle = 180");
+  delay(1000);
+}
+
+
+// ---- Function to move one servo up and down ----
+// void waveServo(Servo &servo, const char *name, int stepDelay) {
+//   for (int pos = 90; pos >= 0; pos--) {
+//     servo.write(pos);
+//     Serial.print(name); Serial.print(" Angle: "); Serial.println(pos);
+//     delay(stepDelay);
+//   }
+//   for (int pos = 0; pos <= 90; pos++) {
+//     servo.write(pos);
+//     Serial.print(name); Serial.print(" Angle: "); Serial.println(pos);
+//     delay(stepDelay);
+//   }
+// }
+
 // #include <ESP32Servo.h>
 
 // // --- Create 3 servo objects ---
@@ -71,58 +120,4 @@
 //   }
 // }
 
-#include <ESP32Servo.h>
 
-// --- Create 3 servo objects ---
-Servo servo1;
-Servo servo2;
-
-Servo servo3;
-
-const int servoPin1 = 13;
-const int servoPin2 = 12;
-
-
-const int servoPin3 = 14;
-
-void setup() {
-  Serial.begin(115200);
-
-  // Attach servos
-  servo1.attach(servoPin1);
-  servo2.attach(servoPin2);
-  servo3.attach(servoPin3);
-
-}
-
-// ---- Function to move one servo up and down ----
-void waveServo(Servo &servo, const char *name, int stepDelay) {
-  for (int pos = 90; pos >= 0; pos--) {
-    servo.write(pos);
-    Serial.print(name); Serial.print(" Angle: "); Serial.println(pos);
-    delay(stepDelay);
-  }
-  for (int pos = 0; pos <= 90; pos++) {
-    servo.write(pos);
-    Serial.print(name); Serial.print(" Angle: "); Serial.println(pos);
-    delay(stepDelay);
-  }
-}
-
-void loop() {
-  // // Servo1 does wave
-  // waveServo(servo1, "Servo1", 10);  // 50ms delay per step = very slow
-
-  // // Servo2 starts after Servo1 peaks (during Servo1 decrease)
-  // waveServo(servo2, "Servo2", 10);
-
-  // // Servo3 starts after Servo2 peaks (during Servo2 decrease)
-  // waveServo(servo3, "Servo3", 10);
-
-  // // Then it cycles back automatically
-
-  // Start all at 0°
-  servo1.write(90);
-  servo2.write(90);
-  servo3.write(90);
-}

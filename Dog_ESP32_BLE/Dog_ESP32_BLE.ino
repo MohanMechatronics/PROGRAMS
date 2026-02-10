@@ -1,31 +1,8 @@
+#include <Arduino.h>
 #include <ESP32Servo.h>
-#include <Bluepad32.h>
+#include "BluetoothSerial.h"
 
-ControllerPtr myControllers[BP32_MAX_GAMEPADS];
-
-void onConnectedController(ControllerPtr ctl) {
-  for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
-    if (myControllers[i] == nullptr) {
-      Serial.printf("CALLBACK: Controller connected, index=%d\n", i);
-      ControllerProperties properties = ctl->getProperties();
-      Serial.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n",
-                    ctl->getModelName().c_str(), properties.vendor_id, properties.product_id);
-      myControllers[i] = ctl;
-      break;
-    }
-  }
-}
-
-
-void onDisconnectedController(ControllerPtr ctl) {
-  for (int i = 0; i < BP32_MAX_GAMEPADS; i++) {
-    if (myControllers[i] == ctl) {
-      Serial.printf("CALLBACK: Controller disconnected from index=%d\n", i);
-      myControllers[i] = nullptr;
-      break;
-    }
-  }
-}
+BluetoothSerial SerialBT;
 
 Servo Leg1F;
 Servo Leg1B;
@@ -110,94 +87,11 @@ int previouscomma;
 String reccmd;
 String othercmd;
 
-void dumpGamepad(ControllerPtr ctl) {
-  Serial.printf(
-    "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, misc: 0x%02x\n",
-    ctl->index(), ctl->dpad(), ctl->buttons(), ctl->axisX(), ctl->axisY(),
-    ctl->axisRX(), ctl->axisRY(), ctl->brake(), ctl->throttle(), ctl->miscButtons());
-}
-
-// Gamepad input handler
-void processGamepad(ControllerPtr ctl) {
-  if (ctl->axisY() > 75) {
-    reccmd= "B";
-  }
-  else if (ctl->axisY() < -75) {
-    reccmd = "F";
-  }
-  else if (ctl->axisX() > 75) {
-    reccmd = "R";
-  }
-  else if (ctl->axisX() < -75) {
-    reccmd = "L";
-  }
-  else if (ctl->dpad() == 0x01) {
-   reccmd = "B";
-  }
-  else if (ctl->dpad() == 0x02) {
-    reccmd= "F";
-  }
-  else if (ctl->dpad() == 0x08) {
-    reccmd = "L";
-  }
-  else if (ctl->dpad() == 0x04) {
-    reccmd = "R";
-  }
-  else{
-    reccmd = "S";
-    Leg1F.write(80);
-    Leg1B.write(100);
-    Leg2F.write(100);
-    Leg2B.write(80);
-    Leg3F.write(80);
-    Leg3B.write(100);
-    Leg4F.write(100);
-    Leg4B.write(80);
-  }
-
-  if (ctl->a()) { 
-    sithome();
-  }                      // X 
-
-  // if (ctl->x()) reccmd = "I"; // Square
-  // if (ctl->b()) reccmd = "H";//cirle
-  // if (ctl->y()) reccmd = "J";// tringle
-  if (ctl->brake() > 10)  changeheight();
-  if (ctl->throttle() > 10) sayhai();
-  
-  if (ctl->buttons()==0x0010) { 
-      reccmd ="p";
-  }
-  
-  if (ctl->buttons()==0x0020) { 
-      othercmd = "O";
-  }
-
-  dumpGamepad(ctl);
-}
-
-void processControllers() {
-  for (auto ctl : myControllers) {
-    if (ctl && ctl->isConnected() && ctl->hasData()) {
-      if (ctl->isGamepad()) {
-        processGamepad(ctl);
-      } else {
-        Serial.println("Unsupported controller");
-      }
-    }
-  }
-}
 
 void setup() {
   Serial.begin(115200);
-  Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
-  const uint8_t* addr = BP32.localBdAddress();
-  Serial.printf("BD Addr: %2X:%2X:%2X:%2X:%2X:%2X\n",
-                addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-
-  BP32.setup(&onConnectedController, &onDisconnectedController);
-  BP32.enableVirtualDevice(false);
-
+  SerialBT.begin("DOG_BOT");   // Bluetooth name
+  
   LALeg1F = 80;
   LALeg1B = 100;
   LALeg2F = 100;
@@ -237,16 +131,30 @@ void setup() {
   Bheight = 5;
   reccmd = "S";
   smoothrun = true;
-  smoothdelay = 2;
+  smoothdelay = 1;
   delay(2000);
 }
 
 void loop() {
-  Serial.println(reccmd);
-  bool dataUpdated = BP32.update();
-  if (dataUpdated){
-    processControllers();
+  if (SerialBT.available()) {
+  char btCmd = SerialBT.read();
+
+  // Ignore newline, carriage return, space
+  if (btCmd == '\n' || btCmd == '\r' || btCmd == ' ') {
+    return;
   }
+
+  reccmd = String(btCmd);
+  Serial.print("CMD: ");
+  Serial.println(reccmd);
+}
+  
+  if (reccmd == "S") {
+    sithome();
+    return;
+  }
+
+
   if (reccmd == "F" || reccmd == "B" || reccmd == "L" || reccmd == "R" || reccmd == "G" || reccmd == "I" || reccmd == "H" || reccmd == "J") {
     if (reccmd == "F" || reccmd == "L" || reccmd == "G" || reccmd == "I") {
       walkstep = walkstep + 1;
@@ -361,8 +269,6 @@ void loop() {
       Servomovement();
     }
 
-    delay(100);
-
     if (stopcmd == true) {
       if (walkstep == 4) {
         reccmd = "S";
@@ -375,11 +281,11 @@ void loop() {
   } else if (heightchange != 0) {
     changeheight();
   } else if (reccmd == "C") {
-    smoothdelay = 8;
+    smoothdelay = 1;
     selfcheck();
-    smoothdelay = 2;
+    smoothdelay = 1;
     reccmd = "S";
-  } else if (reccmd == "V") {
+  } else if (reccmd == "Y") {
     sayhai();
     reccmd = "S";
   }
@@ -408,13 +314,13 @@ void sayhai() {
   TOHeadservo = 90;
   Servomovement();
 
-  for (int i = 1; i <= 5; i++) {
-    delay(500);
+  for (int i = 1; i <= 3; i++) {
+    delay(10);
     TOLeg1F = 60;
     TOHeadservo = 135;
     Servomovement();
 
-    delay(500);
+    delay(10);
     TOLeg1F = 100;
     TOHeadservo = 45;
     Servomovement();
@@ -496,7 +402,7 @@ void changeheight() {
     Bheight = 0;
   }
 
-  if (othercmd == "D" || othercmd == "U" || othercmd == "W" || othercmd == "Y") {
+  if (othercmd == "D" || othercmd == "U" || othercmd == "W" ) {
     Fheight = Fheight + heightchange;
     if (Fheight > 5) {
       Fheight = 5;
@@ -594,7 +500,9 @@ void smoothmove() {
     stepLeg3B = (TOLeg3B - LALeg3B) / maxstep;
     stepLeg4F = (TOLeg4F - LALeg4F) / maxstep;
     stepLeg4B = (TOLeg4B - LALeg4B) / maxstep;
-    for (int i = 0; i <= maxstep; i += 1) {
+    
+    int stepSize = 15;  // try 2, 3, or 4
+    for (int i = 0; i <= maxstep; i += stepSize){
       LALeg1F = LALeg1F + stepLeg1F;
       LALeg1B = LALeg1B + stepLeg1B;
       LALeg2F = LALeg2F + stepLeg2F;

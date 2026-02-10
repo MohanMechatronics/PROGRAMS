@@ -118,6 +118,8 @@ for (unsigned int i = 0; i < steps; i++) {
     servo3.write(home3 - 20);
     delay(100);
     standhome();
+
+    
     delay(100);
     servo2.write(home2 - 20);
     servo3.write(home3 + 20);
@@ -250,6 +252,7 @@ void wink(unsigned int times) {
   }
   standhome();
 }
+
 void handshake(unsigned int times) {
   servo4.write(180);
   delay(200);
@@ -380,7 +383,7 @@ void processGamepad(ControllerPtr ctl) {
                             0x10 /* strongMagnitude */);
     handshake(2); 
   }
-  
+  o
   if (ctl->buttons()==0x0010) { 
     shakeL(1);
   }

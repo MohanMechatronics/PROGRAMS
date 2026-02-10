@@ -12,7 +12,7 @@ const int pinFR = 12;
 const int pinBL = 14;
 const int pinBR = 27;
 
-// Angles for gait
+// Angles for gaitO
 const int angleForward = 60;
 const int angleDown    = 90;
 const int angleBackward = 120;

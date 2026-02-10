@@ -11,10 +11,10 @@
 #include <ESP32Servo.h>
 
 // Servo declarations
-Servo servo1;  // Right leg
-Servo servo2;  // Left leg
-Servo servo3;  // Right arm
-Servo servo4;  // Left arm
+Servo servo1;  // Right leg 13
+Servo servo2;  // Left leg 12
+Servo servo3;  // Right arm 14
+Servo servo4;  // Left arm 27
 
 // Home angles
 int home1 = 120;

@@ -19,6 +19,7 @@ RR 25==> ------   ------ <== RL 26
 ACB_Biped_Robot_WiFi Biped_Robot;
 
 // WiFi user name and password 
+
 const char* ssid = "Biped_Robot";
 const char* password = "12345678";
 
@@ -26,7 +27,7 @@ const char* password = "12345678";
 void setup() {    // initialize
   Serial.begin(115200);  // set the baud rate to 115200
  
-  Biped_Robot.myservo_init(38,48,42,5);
+  Biped_Robot.myservo_init(4,39,5,38);
   // Biped_Robot.myservo_init(12,25,26,27);
 
   Biped_Robot.Ultrasonic_Init();
@@ -39,7 +40,6 @@ void setup() {    // initialize
   Serial.println(myIP); // address: 192.168.4.1
   Biped_Robot.stop();
   Biped_Robot.startWebServer();
-
   
 }
 

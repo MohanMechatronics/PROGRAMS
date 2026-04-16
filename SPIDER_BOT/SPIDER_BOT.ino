@@ -10,8 +10,10 @@
 //  ----- --------    --------- -----
 // |  D3    |               |  D5    |
 // | joint3 |               | joint5 |
+
 //  --------                 --------
 //                Front
+
 
   // joint2.attach(4);  IO1
   // joint3.attach(39); IO2
@@ -41,6 +43,7 @@ Servo joint9;  // Right back leg
 // Home positions
 int home_joint2 = 170; 
 int home_joint3 = 0;
+
 int home_joint4 = 10;
 int home_joint5 = 50;
 int home_joint6 = 150;

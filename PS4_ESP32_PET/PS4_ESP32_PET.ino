@@ -408,6 +408,7 @@ void processControllers() {
 }
 
 void setup() {
+  
   Serial.begin(115200);
   Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
   const uint8_t* addr = BP32.localBdAddress();
@@ -423,10 +424,13 @@ void setup() {
   servo4.attach(27);  // Left arm
 
   standhome();
+
 }
 
 void loop() {
+
   if (BP32.update()) {
     processControllers();
   }
+
 }

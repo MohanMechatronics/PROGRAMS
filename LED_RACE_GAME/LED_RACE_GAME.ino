@@ -1,38 +1,11 @@
-/*  
- * ____                     _      ______ _____    _____
-  / __ \                   | |    |  ____|  __ \  |  __ \               
- | |  | |_ __   ___ _ __   | |    | |__  | |  | | | |__) |__ _  ___ ___ 
- | |  | | '_ \ / _ \ '_ \  | |    |  __| | |  | | |  _  // _` |/ __/ _ \
- | |__| | |_) |  __/ | | | | |____| |____| |__| | | | \ \ (_| | (_|  __/
-  \____/| .__/ \___|_| |_| |______|______|_____/  |_|  \_\__,_|\___\___|
-        | |                                                             
-        |_|          
- Open LED Race
- An minimalist cars race for LED strip  
-  
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
-
- by gbarbarov@singulardevices.com  for Arduino day Seville 2019 
- https://www.hackster.io/gbarbarov/open-led-race-a0331a
- https://twitter.com/openledrace
- 
- Code made dirty and fast, next improvements in: 
- https://gitlab.com/open-led-race
- https://openledrace.net/open-software/
-*/
-
-                                                            
 #include <Adafruit_NeoPixel.h>
 #define MAXLED         180 // MAX LEDs actives on strip
 
-//Pins Arduino Day 19 version 
-#define PIN_LED        7  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A  
-#define PIN_P1         2   // switch player 1 to PIN and GND
-#define PIN_P2         5   // switch player 2 to PIN and GND 
-#define PIN_AUDIO      8   // through CAP 2uf to speaker 8 ohms
+//Pins Arduino Day 19 version
+#define PIN_LED        3  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A  
+#define PIN_P1         5   // switch player 1 to PIN and GND
+#define PIN_P2         7   // switch player 2 to PIN and GND 
+#define PIN_AUDIO      12   // through CAP 2uf to speaker 8 ohms
 
 //Pins Maker Faire Roma 19 version 
 //#define PIN_LED        2  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A  

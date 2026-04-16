@@ -1,0 +1,21 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Change 0x27 to 0x3F if needed
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+  Wire.begin(13, 14);   // SDA, SCL for ESP32
+  lcd.init();           // Initialize LCD
+  lcd.backlight();      // Turn on backlight
+
+  lcd.setCursor(0, 0);
+  lcd.print("ESP32 LCD Test");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Working...");
+}
+
+void loop() {
+  // Nothing here
+}

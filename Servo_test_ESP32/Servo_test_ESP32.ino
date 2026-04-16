@@ -1,9 +1,9 @@
-#include <ESP32Servo.h>
+#include <Servo.h>
 
 // --- Create servo object ---
 Servo servo1;
 
-const int servoPin1 = 27;
+const int servoPin1 = 5;
 
 void setup() {
   Serial.begin(115200);

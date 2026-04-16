@@ -228,7 +228,6 @@ static EI_IMPULSE_ERROR inference_tflite_run(
     uint64_t ctx_end_us = ei_read_timer_us();
 
     result->timing.classification_us = ctx_end_us - ctx_start_us;
-    result->timing.classification = (int)(result->timing.classification_us / 1000);
 
     EI_LOGD("Predictions (time: %d ms.):\n", result->timing.classification);
 
@@ -262,12 +261,13 @@ static EI_IMPULSE_ERROR inference_tflite_run(
  * @return     The ei impulse error.
  */
 EI_IMPULSE_ERROR run_nn_inference_from_dsp(
-    ei_learning_block_config_tflite_graph_t *config,
+    ei_learning_block_config_tflite_graph_t *block_config,
     signal_t *signal,
     matrix_t *output_matrix)
 {
-    TfLiteTensor* input;
-    TfLiteTensor* outputs;
+    TfLiteTensor* input = nullptr; // will be owned by TFLite
+    TfLiteTensor** outputs = (TfLiteTensor**)ei_malloc(block_config->output_tensors_size * sizeof(TfLiteTensor*));
+
     uint64_t ctx_start_us = ei_read_timer_us();
     ei_unique_ptr_t p_tensor_arena(nullptr, ei_aligned_free);
 
@@ -279,10 +279,10 @@ EI_IMPULSE_ERROR run_nn_inference_from_dsp(
 #endif
 
     EI_IMPULSE_ERROR init_res = inference_tflite_setup(
-        config,
+        block_config,
         &ctx_start_us,
         &input,
-        &outputs,
+        outputs,
         &interpreter,
         p_tensor_arena,
         (void**)&profiler);
@@ -303,12 +303,13 @@ EI_IMPULSE_ERROR run_nn_inference_from_dsp(
         return EI_IMPULSE_TFLITE_ERROR;
     }
 
-    auto output_res = fill_output_matrix_from_tensor(&outputs[0], output_matrix);
+    auto output_res = fill_output_matrix_from_tensor(outputs[0], output_matrix);
     if (output_res != EI_IMPULSE_OK) {
         return output_res;
     }
 
     delete interpreter;
+    ei_free(outputs);
 
     return EI_IMPULSE_OK;
 }
@@ -334,8 +335,9 @@ EI_IMPULSE_ERROR run_nn_inference(
 {
     ei_learning_block_config_tflite_graph_t *block_config = (ei_learning_block_config_tflite_graph_t*)config_ptr;
 
-    TfLiteTensor* input;
-    TfLiteTensor* outputs;
+    TfLiteTensor* input = nullptr; // will be owned by TFLite
+    TfLiteTensor** outputs = (TfLiteTensor**)ei_malloc(block_config->output_tensors_size * sizeof(TfLiteTensor*));
+
     uint64_t ctx_start_us = ei_read_timer_us();
     ei_unique_ptr_t p_tensor_arena(nullptr, ei_aligned_free);
 
@@ -350,7 +352,7 @@ EI_IMPULSE_ERROR run_nn_inference(
         block_config,
         &ctx_start_us,
         &input,
-        &outputs,
+        outputs,
         &interpreter,
         p_tensor_arena,
         (void**)&profiler);
@@ -377,7 +379,7 @@ EI_IMPULSE_ERROR run_nn_inference(
         profiler);
 
     for (uint32_t output_ix = 0; output_ix < block_config->output_tensors_size; output_ix++) {
-        TfLiteTensor* output = &outputs[output_ix];
+        TfLiteTensor *output = outputs[output_ix];
         // calculate the size of the output by iterating through dims
         size_t output_size = 1;
         for (int dim_num = 0; dim_num < output->dims->size; dim_num++) {
@@ -418,10 +420,11 @@ EI_IMPULSE_ERROR run_nn_inference(
             }
         }
 
-        result->_raw_outputs[learn_block_index].blockId = block_config->block_id;
+        result->_raw_outputs[learn_block_index + output_ix].blockId = block_config->block_id + output_ix;
     }
 
     delete interpreter;
+    ei_free(outputs);
 
     if (run_res != EI_IMPULSE_OK) {
         return run_res;
@@ -447,8 +450,10 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
     ei_learning_block_config_tflite_graph_t *block_config = (ei_learning_block_config_tflite_graph_t*)config_ptr;
 
     uint64_t ctx_start_us;
-    TfLiteTensor* input;
-    TfLiteTensor* outputs;
+
+    TfLiteTensor* input = nullptr; // will be owned by TFLite
+    TfLiteTensor** outputs = (TfLiteTensor**)ei_malloc(block_config->output_tensors_size * sizeof(TfLiteTensor*));
+
     ei_unique_ptr_t p_tensor_arena(nullptr, ei_aligned_free);
 
     tflite::MicroInterpreter* interpreter;
@@ -462,7 +467,7 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
         block_config,
         &ctx_start_us,
         &input,
-        &outputs,
+        outputs,
         &interpreter,
         p_tensor_arena,
         (void**)&profiler);
@@ -493,7 +498,6 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
     }
 
     result->timing.dsp_us = ei_read_timer_us() - dsp_start_us;
-    result->timing.dsp = (int)(result->timing.dsp_us / 1000);
 
 #if EI_LOG_LEVEL == EI_LOG_LEVEL_DEBUG
     ei_printf("Features (%d ms.): ", result->timing.dsp);
@@ -513,7 +517,7 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
         profiler);
 
     for (uint32_t output_ix = 0; output_ix < block_config->output_tensors_size; output_ix++) {
-        TfLiteTensor* output = &outputs[output_ix];
+        TfLiteTensor* output = outputs[output_ix];
         // calculate the size of the output by iterating through dims
         size_t output_size = 1;
         for (int dim_num = 0; dim_num < output->dims->size; dim_num++) {
@@ -554,10 +558,11 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
             }
         }
 
-        result->_raw_outputs[learn_block_index].blockId = block_config->block_id;
+        result->_raw_outputs[learn_block_index + output_ix].blockId = block_config->block_id + output_ix;
     }
 
     delete interpreter;
+    ei_free(outputs);
 
     if (run_res != EI_IMPULSE_OK) {
         return run_res;

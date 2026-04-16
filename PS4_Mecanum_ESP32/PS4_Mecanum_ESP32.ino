@@ -121,8 +121,8 @@ struct MOTOR_PINS
 
 std::vector<MOTOR_PINS> motorPins = 
 {
-  {13, 27},  //FRONT_RIGHT_MOTOR
-  {26, 25},  //BACK_RIGHT_MOTOR
+  {26, 25},  //FRONT_RIGHT_MOTOR
+  {13, 27}, //BACK_RIGHT_MOTOR
   {23, 4},  //FRONT_LEFT_MOTOR
   {19,18},  //BACK_LEFT_MOTOR   
 };
@@ -154,6 +154,7 @@ void processGamepad(ControllerPtr ctl) {
   }
   else if (ctl->axisRX() < -75)
   {
+
     
     ctl->playDualRumble(0 /* delayedStartMs */, 500 /* durationMs */, 0x10 /* weakMagnitude */,
                             0x10 /* strongMagnitude */);

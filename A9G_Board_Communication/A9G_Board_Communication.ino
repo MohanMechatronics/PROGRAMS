@@ -19,8 +19,11 @@ void loop() {
     String cmd = Serial.readStringUntil('\n');
     cmd.trim();
     A9G.print(cmd);
+  
+  
     A9G.print("\r\n");
   }
+
 
   // A9G → PC
   while (A9G.available()) {

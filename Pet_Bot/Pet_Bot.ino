@@ -8,6 +8,21 @@
 //  ----- --------    --------- -----
 //                Front
 
+// OLD PIN SETUP //
+// IO1 - servo 1
+// IO2 - servo 2
+// IO3 - servo 3
+// IO4 - servo 4
+
+// NEW PIN SETUP //
+// IO1 - servo 2
+// IO2 - servo 4
+// IO3 - servo 1
+// IO4 - servo 3
+
+
+
+
 #include <ESP32Servo.h>
 
 // Servo declarations
